@@ -99,21 +99,26 @@ export default function App() {
     const sender = Keypair.generate();
 
     console.log('Sender account: ', sender.publicKey.toString());
-    console.log('Airdropping 2 SOL to Sender Wallet');
-
     // save this new KeyPair into this state variable
     setSenderKeypair(sender);
 
-    // request airdrop into this new account
-    const airdropSignature = await connection.requestAirdrop(
-      sender.publicKey,
-      2 * LAMPORTS_PER_SOL
-    )
+    console.log('Airdropping 4 SOL to Sender Wallet');
+    const fromAirDropSignature = await connection.requestAirdrop(
+      new PublicKey(sender.publicKey),
+      4 * LAMPORTS_PER_SOL
+    );
+    // Latest blockhash (unique identifer of the block) of the cluster
+    let latestBlockHash = await connection.getLatestBlockhash();
 
-    const latestBlockHash = await connection.getLatestBlockhash();
+    // Confirm transaction using the last valid block height (refers to its time)
+    // to check for transaction expiration
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: fromAirDropSignature
+    });
 
-    // now confirm the transaction
-    await connection.confirmTransaction(airdropSignature);
+    console.log("Airdrop completed for the Sender account");
 
     console.log('Wallet Balance: ' + (await connection.getBalance(sender.publicKey)) / LAMPORTS_PER_SOL);
   }
@@ -131,8 +136,7 @@ export default function App() {
       try {
         // connect to phantom wallet and return response which includes the wallet public key
         const res = await solana.connect();
-
-        console.log("Account connected is ", res.publicKey.toString());
+        console.log("Account connected to is ", res.publicKey.toString());
         // save the public key of the phantom wallet to the state variable
         setReceiverPublicKey(res);
       } catch (err) {
@@ -168,9 +172,20 @@ export default function App() {
   const transferSol = async () => {    
     
     // create a new transaction for the transfer
-
+    var transaction = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: senderKeypair!.publicKey,
+        toPubkey: receiverPublicKey!,
+        lamports: 1 * LAMPORTS_PER_SOL
+      })
+    )
     // send and confirm the transaction
-
+    var signature = await sendAndConfirmTransaction(
+      connection,
+      transaction,
+      [senderKeypair!]
+    );
+  console.log('Signature is', signature);
     console.log("transaction sent and confirmed");
     console.log("Sender Balance: " + await connection.getBalance(senderKeypair!.publicKey) / LAMPORTS_PER_SOL);
     console.log("Receiver Balance: " + await connection.getBalance(receiverPublicKey!) / LAMPORTS_PER_SOL);
