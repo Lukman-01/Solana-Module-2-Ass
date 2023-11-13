@@ -96,23 +96,26 @@ export default function App() {
    * This function is called when the Create a New Solana Account button is clicked
    */
   const createSender = async () => {
-    // create a new Keypair
+    const sender = Keypair.generate();
 
-
-    console.log('Sender account: ', senderKeypair!.publicKey.toString());
+    console.log('Sender account: ', sender.publicKey.toString());
     console.log('Airdropping 2 SOL to Sender Wallet');
 
     // save this new KeyPair into this state variable
-    setSenderKeypair(/*KeyPair here*/);
+    setSenderKeypair(sender);
 
     // request airdrop into this new account
-    
+    const airdropSignature = await connection.requestAirdrop(
+      sender.publicKey,
+      2 * LAMPORTS_PER_SOL
+    )
 
     const latestBlockHash = await connection.getLatestBlockhash();
 
     // now confirm the transaction
+    await connection.confirmTransaction(airdropSignature);
 
-    console.log('Wallet Balance: ' + (await connection.getBalance(senderKeypair!.publicKey)) / LAMPORTS_PER_SOL);
+    console.log('Wallet Balance: ' + (await connection.getBalance(sender.publicKey)) / LAMPORTS_PER_SOL);
   }
 
   /**
