@@ -77,7 +77,7 @@ export default function App() {
   );
 
   // create a state variable for our connection
-  const connection = new Connection("http://127.0.0.1:8899", "confirmed");
+  const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
   
   // connection to use with local solana test validator
   // const connection = new Connection("http://127.0.0.1:8899", "confirmed");
@@ -138,7 +138,7 @@ export default function App() {
         const res = await solana.connect();
         console.log("Account connected to is ", res.publicKey.toString());
         // save the public key of the phantom wallet to the state variable
-        setReceiverPublicKey(res);
+        setReceiverPublicKey(res.publicKey.toString());
       } catch (err) {
         console.log(err);
       }
