@@ -77,7 +77,7 @@ export default function App() {
   );
 
   // create a state variable for our connection
-  const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+  const connection = new Connection("http://127.0.0.1:8899", "confirmed");
   
   // connection to use with local solana test validator
   // const connection = new Connection("http://127.0.0.1:8899", "confirmed");
@@ -102,10 +102,10 @@ export default function App() {
     // save this new KeyPair into this state variable
     setSenderKeypair(sender);
 
-    console.log('Airdropping 4 SOL to Sender Wallet');
+    console.log('Airdropping 2 SOL to Sender Wallet');
     const fromAirDropSignature = await connection.requestAirdrop(
       new PublicKey(sender.publicKey),
-      4 * LAMPORTS_PER_SOL
+      2 * LAMPORTS_PER_SOL
     );
     // Latest blockhash (unique identifer of the block) of the cluster
     let latestBlockHash = await connection.getLatestBlockhash();
@@ -178,14 +178,14 @@ export default function App() {
         toPubkey: receiverPublicKey!,
         lamports: 1 * LAMPORTS_PER_SOL
       })
-    )
+    );
     // send and confirm the transaction
     var signature = await sendAndConfirmTransaction(
       connection,
       transaction,
       [senderKeypair!]
     );
-  console.log('Signature is', signature);
+    console.log('Signature is', signature);
     console.log("transaction sent and confirmed");
     console.log("Sender Balance: " + await connection.getBalance(senderKeypair!.publicKey) / LAMPORTS_PER_SOL);
     console.log("Receiver Balance: " + await connection.getBalance(receiverPublicKey!) / LAMPORTS_PER_SOL);
